@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-//import "./Address.sol";
+import "./Address.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract MetaDappTokenSale {
@@ -78,6 +78,26 @@ contract MetaDappTokenSale {
     function endSale() public isOwner {
         require(token.transfer(owner, token.balanceOf(address(this))));
         payable(owner).transfer(address(this).balance);
+    }
+
+    function tokenSold() public view returns (uint256) {
+        return sold;
+    }
+
+    function totalTokens() public view returns (uint256) {
+        return __unAmount(token.totalSupply(), 18);
+    }
+
+    function __phases() public view returns (Phase[] memory) {
+        return phases;
+    }
+
+    function currentPhase() public view returns (Phase memory) {
+        return phases[currentPhaseIndex];
+    }
+
+    function __isOwner() public view returns (bool) {
+        return msg.sender == owner;
     }
 
     function phase(uint256 phase_id) public view returns (Phase memory) {
