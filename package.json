@@ -15,5 +15,14 @@
   "bugs": {
     "url": "https://github.com/jasaf76/tienda_Nft_Marketplace/issues"
   },
-  "homepage": "https://github.com/jasaf76/tienda_Nft_Marketplace#readme"
+  "homepage": "https://github.com/jasaf76/tienda_Nft_Marketplace#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.8.0",
+    "@truffle/hdwallet-provider": "^2.0.8",
+    "ipfs-http-client": "^56.0.0",
+    "solc": "^0.8.0"
+  },
+  "devDependencies": {
+    "truffle-plugin-verify": "^0.5.26"
+  }
 }
