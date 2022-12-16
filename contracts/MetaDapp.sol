@@ -130,6 +130,35 @@ contract MetaDapp {
         emit ProductPurchased(msg.sender, product.owner, product.price);
     }
 
+    function totalUsers() public view returns (uint256) {
+        return _totalUsers;
+    }
+
+    function getProducts() public view returns (Product[] memory) {
+        return products;
+    }
+
+    function getProduct(uint256 product_id)
+        public
+        view
+        returns (Product memory)
+    {
+        return products[product_id];
+    }
+
+    function getUser(address userAddress) public view returns (User memory) {
+        return users[userAddress];
+    }
+
+    function withdrawBNB(address payable account) external isOwner {
+        (bool success, ) = account.call{value: address(this).balance}("");
+        require(success);
+    }
+
+    function withdraw(address to, uint256 amount) external isOwner {
+        require(token.transfer(to, amount));
+    }
+
     modifier isOwner() {
         require(msg.sender == owner);
         _;
