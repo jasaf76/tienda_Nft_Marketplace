@@ -51,7 +51,7 @@ contract MetaDapp {
         return secureAddPercent;
     }
 
-    function __percentValue(uint _amount) public view returns (uint256) {
+    function __percentValue(uint256 _amount) public view returns (uint256) {
         return (secureAddPercent * _amount) / 100;
     }
 
@@ -61,107 +61,73 @@ contract MetaDapp {
 
     function addProduct(
         string memory name,
-        string memory dataHash,
+        string memory desc,
         string memory section,
         uint256 price
-    ) external {
-        transferTokens(
+    ) public {
+        transferTockens(
             address(this),
             __amount(__percentValue(price)),
-            _msgSender()
+            msg.sender
         );
-
         products.push(
-            Product(
-                name,
-                dataHash,
-                section,
-                __amount(price),
-                _msgSender(),
-                noOne
-            )
+            Product(name, desc, section, __amount(price), msg.sender, noOne)
         );
-        emit ProductAdded(_msgSender(), name, __amount(price));
+        emit ProductAdded(msg.sender, name, __amount(price));
     }
 
-    function transferTokens(
+    function transferTockens(
         address _owner,
         uint256 _price,
         address _buyer
     ) private {
         require(
             _price <= token.balanceOf(_buyer),
-            "Insuficent tokens to make transfer"
+            "Es sind nicht genung Tokens um zu transferiren"
         );
         require(
             token.allowance(_buyer, address(this)) >= _price,
-            "Insuficent allowence to make reserve"
+            "Es sind nicht genung Original Tokens um zu transferiren"
         );
 
         bool sent = token.transferFrom(_buyer, _owner, _price);
-        require(sent, "Not sent");
+        require(sent, "Nicht gesendet");
     }
 
-    function updateProductPrice(uint256 product_id, uint256 price) external {
-        require(_msgSender() != noOne);
+    function updateProductPrice(uint256 product_id, uint256 price) public {
+        require(msg.sender != noOne);
         Product storage product = products[product_id];
-        require(_msgSender() == product.owner);
+        require(msg.sender == product.owner);
         require(product.reserved_by == noOne);
         product.price = __amount(price);
     }
 
-    function updateUserContact(string memory dataHash) external {
-        require(_msgSender() != noOne);
-        User storage user = users[_msgSender()];
-        user.dataHash = dataHash;
+    function updateUserContact(string memory contact, string memory name)
+        public
+    {
+        require(msg.sender != noOne);
+        User storage user = users[msg.sender];
+        user.contact = contact;
+        user.name = name;
 
         if (!user.updated) _totalUsers++;
 
         user.updated = true;
     }
 
-    function buyProduct(uint256 product_id) external {
+    function buyProduct(uint256 product_id) public {
         Product storage product = products[product_id];
         require(
-            _msgSender() != product.owner,
-            "You cannot buy your own products"
+            msg.sender != product.owner,
+            "Sie koennen nicht ihre Eigenen NFTS kaufen"
         );
-        transferTokens(product.owner, product.price, _msgSender());
-        User storage buyer = users[_msgSender()];
+        transferTockens(product.owner, product.price, msg.sender);
+        User storage buyer = users[msg.sender];
         buyer.total_products += 1;
         buyer.products.push(product_id);
-        product.reserved_by = _msgSender();
+        product.reserved_by = msg.sender;
 
-        emit ProductPurchased(_msgSender(), product.owner, product.price);
-    }
-
-    function totalUsers() external view returns (uint256) {
-        return _totalUsers;
-    }
-
-    function getProducts() external view returns (Product[] memory) {
-        return products;
-    }
-
-    function getProduct(uint256 product_id)
-        external
-        view
-        returns (Product memory)
-    {
-        return products[product_id];
-    }
-
-    function getUser(address userAddress) external view returns (User memory) {
-        return users[userAddress];
-    }
-
-    function withdrawBNB(address payable account) external onlyOwner {
-        (bool success, ) = account.call{value: address(this).balance}("");
-        require(success);
-    }
-
-    function withdraw(address to, uint256 amount) external onlyOwner {
-        require(token.transfer(to, amount));
+        emit ProductPurchased(msg.sender, product.owner, product.price);
     }
 
     modifier isOwner() {
